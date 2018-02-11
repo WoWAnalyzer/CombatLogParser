@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+
+# production
+/build
+
+# During dev it may be nice to have one in the repo directory, but we never want to commit it.
+WoWCombatLog.txt
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+temp
+.tmp
+.sass-cache
+
+# Regularly changing or system specific IDE files
+/.idea/vcs.xml
+/.idea/workspace.xml
+/.vscode
+
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/slnx.sqlite-journal
+.vs/VSWorkspaceState.json
+.vs/WoWAnalyzer/v15/.suo
