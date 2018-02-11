@@ -11,3 +11,7 @@ The plan is to make a custom combatlog parser for a WoWAnalyzer Electron app. Th
 # License
 
 To be determined. We'll probably dual-license under AGPL and a license that allows us (WoWAnalyzer) to relicense the code as we deem in the best interest of the organization and its projects as we can imagine not all tools willing to disclose their entire source.
+
+This means when contributing anything to this project you give us permission to relicense it and do with it as we deem fit.
+
+But we promise it will always remain available under at least AGPL, the dual license is just to make more permissive licenses possible.
