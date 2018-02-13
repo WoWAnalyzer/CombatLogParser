@@ -15,9 +15,9 @@ class FightScanner {
     // if (eventName === 'ENCOUNTER_START') {
     //   console.log(...eventParts);
     // }
-    if (time === '9/8 20:23:11.107') {
-      console.log(eventParts);
-    }
+    // if (time === '9/8 20:23:11.107') {
+    //   console.log(eventParts);
+    // }
   }
 }
 

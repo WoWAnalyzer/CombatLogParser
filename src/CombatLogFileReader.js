@@ -11,8 +11,34 @@ import EventEmitter from 'events';
 class CombatLogFileReader extends EventEmitter {
   static TIME_SEPARATOR = '  ';
   static EVENT_VALUE_SEPARATOR = ',';
+  // static splitLine(line) {
+  //   return line.split(',');
+  // }
   static splitLine(line) {
-    return line.split(this.EVENT_VALUE_SEPARATOR);
+    const parts = [];
+    const lineLength = line.length;
+    let currentPartStartIndex = 0;
+    let isInString = false;
+    let partsIsString = false;
+    for (let i = 0; i < lineLength; i++) {
+      const character = line[i];
+      if (character === '"') {
+        isInString = !isInString;
+        partsIsString = true;
+      }
+      if (character === this.EVENT_VALUE_SEPARATOR && !isInString) {
+        const partStartIndex = partsIsString ? currentPartStartIndex + 1 : currentPartStartIndex;
+        const partEndIndex = partsIsString ? i - 2 : i;
+        const partLength = partEndIndex - currentPartStartIndex;
+        const part = line.substr(partStartIndex, partLength);
+        parts.push(part);
+        currentPartStartIndex = i + 1;
+        partsIsString = false;
+      }
+    }
+    parts.push(line.substr(currentPartStartIndex));
+
+    return parts;
   }
 
   _path = null;
