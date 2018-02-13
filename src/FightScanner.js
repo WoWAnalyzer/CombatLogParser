@@ -12,12 +12,9 @@ class FightScanner {
     });
   }
   handleEvent(eventName, eventParts, lineNo, time) {
-    // if (eventName === 'ENCOUNTER_START') {
-    //   console.log(...eventParts);
-    // }
-    // if (time === '9/8 20:23:11.107') {
-    //   console.log(eventParts);
-    // }
+    if (eventName === 'ENCOUNTER_START' || eventName === 'ENCOUNTER_END') {
+      console.log(`#${lineNo}`, eventName, ...eventParts);
+    }
   }
 }
 
