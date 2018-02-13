@@ -18,22 +18,32 @@ class CombatLogFileReader extends EventEmitter {
     const parts = [];
     const lineLength = line.length;
     let currentPartStartIndex = 0;
-    let isInString = false;
-    let partsIsString = false;
+    let isPartString = false;
     for (let i = 0; i < lineLength; i++) {
       const character = line[i];
-      if (character === '"') {
-        isInString = !isInString;
-        partsIsString = true;
+      if (character === '"' && i === currentPartStartIndex) {
+        // If we're still at the start of the part we can be sure this is a string
+        isPartString = true;
       }
-      if (character === this.EVENT_VALUE_SEPARATOR && !isInString) {
-        const partStartIndex = partsIsString ? currentPartStartIndex + 1 : currentPartStartIndex;
-        const partEndIndex = partsIsString ? i - 2 : i;
+      if (character === this.EVENT_VALUE_SEPARATOR) {
+        if (isPartString) {
+          // We determined earlier that we're in a string, so verify we reached the end and not just a comma within the string
+          const previousCharacter = line[i - 1];
+          if (previousCharacter === '"') {
+            // This comma is after the string closer, so proceed
+          } else {
+            // We're still in the middle of the string
+            continue;
+          }
+        }
+
+        const partStartIndex = isPartString ? currentPartStartIndex + 1 : currentPartStartIndex;
+        const partEndIndex = isPartString ? i - 2 : i;
         const partLength = partEndIndex - currentPartStartIndex;
         const part = line.substr(partStartIndex, partLength);
         parts.push(part);
         currentPartStartIndex = i + 1;
-        partsIsString = false;
+        isPartString = false;
       }
     }
     parts.push(line.substr(currentPartStartIndex));
