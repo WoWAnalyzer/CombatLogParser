@@ -10,42 +10,52 @@ import EventEmitter from 'events';
  */
 class CombatLogFileReader extends EventEmitter {
   static TIME_SEPARATOR = '  ';
-  static EVENT_VALUE_SEPARATOR = ',';
-  // static splitLine(line) {
-  //   return line.split(',');
-  // }
+  static EVENT_PART_SEPARATOR = ',';
   static splitLine(line) {
+    const partSeparator = this.EVENT_PART_SEPARATOR;
+    const partSeparatorLength = partSeparator.length;
+
     const parts = [];
     const lineLength = line.length;
     let currentPartStartIndex = 0;
-    let isPartString = false;
+    let isCurrentPartString = false;
     for (let i = 0; i < lineLength; i++) {
       const character = line[i];
+
+      // If the first character is a quote we can be sure we're in a string
       if (character === '"' && i === currentPartStartIndex) {
-        // If we're still at the start of the part we can be sure this is a string
-        isPartString = true;
+        isCurrentPartString = true;
       }
-      if (character === this.EVENT_VALUE_SEPARATOR) {
-        if (isPartString) {
-          // We determined earlier that we're in a string, so verify we reached the end and not just a comma within the string
+
+      if (character === partSeparator) {
+        if (isCurrentPartString) {
+          // If we found a comma while in a string, check if the string was closed in the previous character.
           const previousCharacter = line[i - 1];
-          if (previousCharacter === '"') {
-            // This comma is after the string closer, so proceed
-          } else {
-            // We're still in the middle of the string
-            continue;
+          if (previousCharacter !== '"') {
+            // If the previous character was anything other than a quote we're still in the middle of the string.
+            continue; // next character
           }
         }
 
-        const partStartIndex = isPartString ? currentPartStartIndex + 1 : currentPartStartIndex;
-        const partEndIndex = isPartString ? i - 2 : i;
-        const partLength = partEndIndex - currentPartStartIndex;
+        // End of part
+        let partStartIndex = currentPartStartIndex;
+        let partEndIndex = i;
+        // Unwrap strings; turns '"abc"' into 'abc'
+        if (isCurrentPartString) {
+          partStartIndex += 1;
+          partEndIndex -= 1;
+        }
+        // substr needs a length, not an end index
+        const partLength = partEndIndex - partStartIndex;
         const part = line.substr(partStartIndex, partLength);
         parts.push(part);
-        currentPartStartIndex = i + 1;
-        isPartString = false;
+
+        // Prepare next part
+        currentPartStartIndex = i + partSeparatorLength;
+        isCurrentPartString = false;
       }
     }
+    // The last part doesn't end with a comma, so add the remaining stuff as the last part
     parts.push(line.substr(currentPartStartIndex));
 
     return parts;
