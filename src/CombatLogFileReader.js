@@ -114,8 +114,10 @@ class CombatLogFileReader extends EventEmitter {
       const time = this._convertTime(line.substr(0, timeEndIndex));
       const eventIndex = timeEndIndex + timeSeparatorLength;
       const event = line.substr(eventIndex);
-      const eventParts = this.constructor.splitLine(event);
-      const eventName = eventParts.shift();
+      const eventNameEndIndex = event.indexOf(',');
+      const eventName = event.substr(0, eventNameEndIndex);
+      const eventParams = event.substr(eventNameEndIndex + 1);
+      const eventParts = this.constructor.splitLine(eventParams);
       this.emit('event', eventName, eventParts, lineNo, time);
     });
     rl.on('close', () => {
