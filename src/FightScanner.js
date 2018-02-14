@@ -1,3 +1,5 @@
+import splitLine from './splitLine';
+
 class FightScanner {
   _reader = null;
   constructor(reader) {
@@ -11,9 +13,9 @@ class FightScanner {
       this._reader.start(offset);
     });
   }
-  handleEvent(eventName, eventParts, lineNo, time) {
+  handleEvent(lineNo, time, eventName, eventParams) {
     if (eventName === 'ENCOUNTER_START' || eventName === 'ENCOUNTER_END') {
-      console.log(`#${lineNo}`, eventName, ...eventParts);
+      console.log(`#${lineNo}`, eventName, ...splitLine(eventParams));
     }
   }
 }
