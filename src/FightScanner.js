@@ -1,29 +1,18 @@
+import EventEmitter from 'events';
+
 import splitLine from './splitLine';
 
-const DIFFICULTIES = {
-  HEROIC: 15,
-  MYTHIC: 16,
-};
-function difficultyLabel(difficulty) {
-  switch (difficulty) {
-    case DIFFICULTIES.HEROIC: return 'Heroic';
-    case DIFFICULTIES.MYTHIC: return 'Mythic';
-    default: return 'Unknown';
-  }
-}
-
-class FightScanner {
+class FightScanner extends EventEmitter {
   _reader = null;
   constructor(reader) {
+    super();
     this._reader = reader;
   }
 
   scan(offset) {
-    return new Promise((resolve, reject) => {
-      this._reader.on('event', this.handleEvent.bind(this));
-      this._reader.on('finish', resolve);
-      this._reader.start(offset);
-    });
+    this._reader.on('event', this.handleEvent.bind(this));
+    this._reader.on('finish', this.handleFinish.bind(this));
+    this._reader.start(offset);
   }
   _lastStart = null;
   handleEvent(lineNo, time, eventName, eventParams) {
@@ -43,14 +32,28 @@ class FightScanner {
           const bossId = Number(event[0]);
           const bossName = event[1];
           const difficulty = Number(event[2]);
-          const size = Number(event[3]);
+          // const size = Number(event[3]);
           // noinspection EqualityComparisonWithCoercionJS
           const kill = event[4] == '1';
 
-          console.log(`#${startLineNo}-#${lineNo}`, `${startTime}-${time}`, bossId, difficultyLabel(difficulty), bossName, kill ? 'KILL' : 'WIPE');
+          const fight = {
+            startLineNo,
+            endLineNo: lineNo,
+            startTime,
+            endTime: time,
+            bossId,
+            bossName,
+            difficulty,
+            kill,
+          };
+          this.emit('fight', fight);
+          // console.log(`#${startLineNo}-#${lineNo}`, `${startTime}-${time}`, bossId, difficultyLabel(difficulty), bossName, kill ? 'KILL' : 'WIPE');
         }
         break;
     }
+  }
+  handleFinish() {
+    this.emit('finish');
   }
   _isSameFight(event1, event2) {
     const [bossId1, bossName1, difficulty1] = event1;

@@ -1,5 +1,7 @@
 import FightScanner from './FightScanner';
-import CombatLogFileReader from "./CombatLogFileReader";
+import CombatLogFileReader from './CombatLogFileReader';
+
+import { difficultyLabel } from './common/DIFFICULTIES';
 
 // const entities = {};
 //
@@ -16,9 +18,10 @@ import CombatLogFileReader from "./CombatLogFileReader";
 
 const reader = new CombatLogFileReader('WoWCombatLog.txt');
 const scanner = new FightScanner(reader);
-scanner.scan()
-  .then(results => {
-    process.exit(0);
-  }, error => {
-    process.exit(0);
-  });
+scanner.on('fight', fight => {
+  console.log(`#${fight.startLineNo}-#${fight.endLineNo}`, `${fight.startTime}-${fight.endTime}`, fight.bossId, difficultyLabel(fight.difficulty), fight.bossName, fight.kill ? 'KILL' : 'WIPE');
+});
+scanner.on('finish', () => {
+  process.exit(0);
+});
+scanner.scan();
