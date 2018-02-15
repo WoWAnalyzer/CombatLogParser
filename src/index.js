@@ -1,7 +1,7 @@
+import { difficultyLabel } from 'common/DIFFICULTIES';
+
 import FightScanner from './FightScanner';
 import CombatLogFileReader from './CombatLogFileReader';
-
-import { difficultyLabel } from './common/DIFFICULTIES';
 
 // const entities = {};
 //
