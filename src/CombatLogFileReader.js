@@ -37,7 +37,7 @@ class CombatLogFileReader extends EventEmitter {
   start(offset = 0) {
     const rl = readline.createInterface({
       input: fs.createReadStream(this._path),
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     const timeSeparator = this.constructor.TIME_SEPARATOR;
