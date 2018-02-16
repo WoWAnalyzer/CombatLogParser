@@ -52,21 +52,17 @@ class CombatLogFileReader extends EventEmitter {
       lineNo += 1;
 
       const timeEndIndex = line.indexOf(timeSeparator);
-      const time = this._convertTime(line.substr(0, timeEndIndex));
+      const rawDateTime = line.substr(0, timeEndIndex);
       const eventIndex = timeEndIndex + timeSeparatorLength;
       const event = line.substr(eventIndex);
       const eventNameEndIndex = event.indexOf(',');
       const eventName = event.substr(0, eventNameEndIndex);
-      const eventParams = event.substr(eventNameEndIndex + 1);
-      this.emit('event', lineNo, time, eventName, eventParams);
+      const rawEventParams = event.substr(eventNameEndIndex + 1);
+      this.emit('event', lineNo, rawDateTime, eventName, rawEventParams);
     });
     rl.on('close', () => {
       this.emit('finish', lineNo);
     });
-  }
-  _convertTime(time) {
-    // TODO: Convert time into a date
-    return time;
   }
 }
 

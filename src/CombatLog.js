@@ -28,12 +28,8 @@ class CombatLog {
       // const indexFilePath = path.join(path.dirname(filePath), indexFileName);
 
       const scanner = new FightScanner(this.reader);
-      scanner.on('fight', fight => {
-        eventListener(fight);
-      });
-      scanner.on('finish', () => {
-        resolve();
-      });
+      scanner.on('fight', eventListener);
+      scanner.on('finish', resolve);
       scanner.scan();
     });
   }
