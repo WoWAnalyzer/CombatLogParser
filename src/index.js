@@ -3,11 +3,9 @@ import path from 'path';
 import { difficultyLabel } from 'common/DIFFICULTIES';
 
 import CombatLog from './CombatLog';
+import parseDateTime from './parseDateTime';
 
 const filePath = path.resolve('WoWCombatLog.txt'); // TODO: Feed `filePath` through a file function argument
-
-
-
 
 async function main(path) {
   const combatLog = new CombatLog(path);
