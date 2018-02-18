@@ -1,30 +1,34 @@
-const EVENT_PART_SEPARATOR = ',';
+const partSeparator = ',';
+const nestingCharacters = {
+  '"': '"',
+  '[': ']',
+  '(' : ')',
+};
 
 export default function splitLine(line) {
-  const partSeparator = EVENT_PART_SEPARATOR;
   const partSeparatorLength = partSeparator.length;
 
   const parts = [];
   const lineLength = line.length;
   let currentPartStartIndex = 0;
-  let isCurrentPartString = false;
-  for (let i = 0; i < lineLength; i++) {
+  let nestingType = null;
+  for (let i = 0; i < lineLength; i += 1) {
     const character = line[i];
 
     // If the first character is a quote we can be sure we're in a string
-    if (i === currentPartStartIndex && character === '"') {
-      isCurrentPartString = true;
+    if (i === currentPartStartIndex && nestingCharacters[character] !== undefined) {
+      nestingType = character;
     }
 
     if (character === partSeparator) {
-      if (isCurrentPartString) {
-        // If we found a comma while in a string, check if the string was closed in the previous character.
+      if (nestingType !== null) {
+        // If we're in any kind of nesting group, check if the group was closed properly in the previous character. NOTE: This assume the same nesting character for the parent node isn't reused for children for performance and simplicity reasons. This has not been the case yet, but that may change in the future.
         const previousCharacter = line[i - 1];
-        if (previousCharacter !== '"') {
-          // If the previous character was anything other than a quote we're still in the middle of the string.
+        if (previousCharacter !== nestingCharacters[nestingType]) {
+          // If the previous character was anything other than the closing character we're still in the middle of the nested group.
           continue; // next character
         }
-        // Ok so previous character was a quote, but was that quote escaped? Because if it was then we're still in the middle of the string.
+        // Ok so previous character was an ending character, but was it escaped? Because if it was then we're still in the middle of the string.
         const isEscaped = line[i - 2] === '\\';
         if (isEscaped) {
           continue;
@@ -35,14 +39,14 @@ export default function splitLine(line) {
       let partStartIndex = currentPartStartIndex;
       let partEndIndex = i;
       // Unwrap strings; turns '"abc"' into 'abc'
-      if (isCurrentPartString) {
+      if (nestingType === '"') {
         partStartIndex += 1;
         partEndIndex -= 1;
       }
       // substr needs a length, not an end index
       const partLength = partEndIndex - partStartIndex;
       let part = line.substr(partStartIndex, partLength);
-      if (isCurrentPartString && part.indexOf('\\') !== -1) {
+      if (nestingType === '"' && part.indexOf('\\') !== -1) {
         // If the part has a backslash it's likely we have escaped quotes that we need to unescape (it's safe to always run this, but for performance best to only do when really necessary)
         part = part.replace(/\\"/g, '"');
       }
@@ -50,7 +54,7 @@ export default function splitLine(line) {
 
       // Prepare next part
       currentPartStartIndex = i + partSeparatorLength;
-      isCurrentPartString = false;
+      nestingType = null;
     }
   }
   // The last part doesn't end with a comma, so add the remaining stuff as the last part
