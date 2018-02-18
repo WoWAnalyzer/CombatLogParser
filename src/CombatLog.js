@@ -1,5 +1,6 @@
 import CombatLogFileReader from './CombatLogFileReader';
 import FightScanner from './FightScanner';
+import FightParser from './FightParser';
 
 class CombatLog {
   path = null;
@@ -33,8 +34,13 @@ class CombatLog {
       scanner.scan();
     });
   }
-  async getEventsForFight(fight, eventListener) {
-
+  getEventsForFight(fight, eventListener) {
+    return new Promise((resolve, reject) => {
+      const parser = new FightParser(this.reader);
+      parser.on('event', eventListener);
+      parser.on('finish', resolve);
+      parser.parse(fight);
+    });
   }
 }
 
