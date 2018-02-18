@@ -46,19 +46,17 @@ class CombatLogFileReader extends EventEmitter {
 
     this.emit('start');
     rl.on('line', line => {
-      if (offset > lineNo) {
-        return;
+      if (lineNo >= offset) {
+        const timeEndIndex = line.indexOf(timeSeparator);
+        const rawDateTime = line.substr(0, timeEndIndex);
+        const eventIndex = timeEndIndex + timeSeparatorLength;
+        const event = line.substr(eventIndex);
+        const eventNameEndIndex = event.indexOf(',');
+        const eventName = event.substr(0, eventNameEndIndex);
+        const rawEventParams = event.substr(eventNameEndIndex + 1);
+        this.emit('event', lineNo, rawDateTime, eventName, rawEventParams);
       }
       lineNo += 1;
-
-      const timeEndIndex = line.indexOf(timeSeparator);
-      const rawDateTime = line.substr(0, timeEndIndex);
-      const eventIndex = timeEndIndex + timeSeparatorLength;
-      const event = line.substr(eventIndex);
-      const eventNameEndIndex = event.indexOf(',');
-      const eventName = event.substr(0, eventNameEndIndex);
-      const rawEventParams = event.substr(eventNameEndIndex + 1);
-      this.emit('event', lineNo, rawDateTime, eventName, rawEventParams);
     });
     rl.on('close', () => {
       this.emit('finish', lineNo);
