@@ -1,31 +1,30 @@
 import path from 'path';
+import fs from 'fs';
 
 import { difficultyLabel } from 'common/DIFFICULTIES';
 
 import CombatLog from './CombatLog';
-import parseDateTime from './parseDateTime';
 
 const filePath = path.resolve('WoWCombatLog.txt'); // TODO: Feed `filePath` through a file function argument
+const tempFile = path.resolve('../output.txt'); // TODO: Feed `filePath` through a file function argument
+const outputStream = fs.createWriteStream(tempFile, { flags: 'a' });
 
 async function main(path) {
   const combatLog = new CombatLog(path);
-  let firstFight = null;
+  const fights = [];
   await combatLog.getFights(fight => {
-    const startTime = parseDateTime(fight.startTime);
-    const duration = parseDateTime(fight.endTime) - startTime;
-    console.log(`#${fight.startLineNo}-#${fight.endLineNo}`, `${startTime} (${(duration / 1000).toFixed(3)}s)`, fight.bossId, difficultyLabel(fight.difficulty), fight.bossName, fight.kill ? 'KILL' : 'WIPE');
-    if (firstFight === null) {
-      firstFight = fight;
-    }
+    const startDateTime = fight.startDateTime;
+    const duration = fight.endDateTime - startDateTime;
+    console.log(`#${fight.startLineNo}-#${fight.endLineNo}`, `${startDateTime} (${(duration / 1000).toFixed(3)}s)`, fight.bossId, difficultyLabel(fight.difficulty), fight.bossName, fight.kill ? 'KILL' : 'WIPE');
+    fights.push(fight);
   });
-  let eventNo = 0;
-  await combatLog.getEventsForFight(firstFight, event => {
-    if (eventNo < 10) {
-      console.log(event);
-    }
-    eventNo += 1;
-  });
-  console.log('Total events:', eventNo);
+
+  for (const fight of fights) {
+    await combatLog.getEventsForFight(fight, event => {
+      outputStream.write(`${event.timestamp} ${event.type} ${event.params}\n`);
+    });
+  }
+  outputStream.end();
   process.exit(0);
 }
 main(filePath);

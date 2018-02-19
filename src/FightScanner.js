@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 
 import splitLine from './splitLine';
+import parseDateTime from './parseDateTime';
 
 class FightScanner extends EventEmitter {
   _reader = null;
@@ -15,33 +16,33 @@ class FightScanner extends EventEmitter {
     this._reader.start(offset);
   }
   _lastStart = null;
-  handleEvent(lineNo, time, eventName, eventParams) {
+  handleEvent(lineNo, rawDateTime, eventName, rawEventParams) {
     switch (eventName) {
       case 'ENCOUNTER_START':
         this._lastStart = {
           lineNo,
-          time,
-          event: splitLine(eventParams),
+          dateTime: parseDateTime(rawDateTime),
+          event: splitLine(rawEventParams),
         };
         break;
-      case 'ENCOUNTER_END':
-        const event = splitLine(eventParams);
+      case 'ENCOUNTER_END': {
+        const event = splitLine(rawEventParams);
         if (this._lastStart && this._isSameFight(this._lastStart.event, event)) {
           const startLineNo = this._lastStart.lineNo;
-          const startTime = this._lastStart.time;
+          const startDateTime = this._lastStart.dateTime;
           const bossId = Number(event[0]);
           const bossName = event[1];
           const difficulty = Number(event[2]);
           // const size = Number(event[3]);
           // Since this is the result of a file split this is a string-type, but it might change at a later point. Because of the non-strict equals check this will continue to work if it turns into a number or bool.
           // noinspection EqualityComparisonWithCoercionJS
-          const kill = event[4] == '1';
+          const kill = event[4] == '1'; // eslint-disable-line eqeqeq
 
           const fight = {
             startLineNo,
             endLineNo: lineNo,
-            startTime,
-            endTime: time,
+            startDateTime,
+            endDateTime: parseDateTime(rawDateTime),
             bossId,
             bossName,
             difficulty,
@@ -51,6 +52,7 @@ class FightScanner extends EventEmitter {
           // console.log(`#${startLineNo}-#${lineNo}`, `${startTime}-${time}`, bossId, difficultyLabel(difficulty), bossName, kill ? 'KILL' : 'WIPE');
         }
         break;
+      }
       default: break;
     }
   }

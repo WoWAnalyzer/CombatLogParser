@@ -34,7 +34,7 @@ class CombatLogFileReader extends EventEmitter {
     });
   }
 
-  start(offset = 0) {
+  start(startOffset = 0, lastLine = Infinity) {
     const rl = readline.createInterface({
       input: fs.createReadStream(this._path),
       crlfDelay: Infinity,
@@ -46,7 +46,7 @@ class CombatLogFileReader extends EventEmitter {
 
     this.emit('start');
     rl.on('line', line => {
-      if (lineNo >= offset) {
+      if (lineNo >= startOffset && lineNo <= lastLine) {
         const timeEndIndex = line.indexOf(timeSeparator);
         const rawDateTime = line.substr(0, timeEndIndex);
         const eventIndex = timeEndIndex + timeSeparatorLength;
