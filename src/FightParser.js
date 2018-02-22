@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import parseDateTime from './parseDateTime';
-import splitLine from './splitLine';
 
 class FightParser extends EventEmitter {
   /** @var {CombatLogFileReader} */

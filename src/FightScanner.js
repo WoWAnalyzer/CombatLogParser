@@ -50,6 +50,8 @@ class FightScanner extends EventEmitter {
           };
           this.emit('fight', fight);
           // console.log(`#${startLineNo}-#${lineNo}`, `${startTime}-${time}`, bossId, difficultyLabel(difficulty), bossName, kill ? 'KILL' : 'WIPE');
+        } else {
+          console.warn(`Skipping ${event.bossName} because it looks wrong`);
         }
         break;
       }
